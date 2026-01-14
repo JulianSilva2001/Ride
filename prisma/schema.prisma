@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Role enum is not supported in SQLite, using String with default
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("USER") // USER, HOST, ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  cars          Car[]
+  bookings      Booking[]
+  reviews       Review[]
+}
+
+model Car {
+  id          String   @id @default(cuid())
+  make        String
+  model       String
+  year        Int
+  pricePerDay Float
+  description String
+  category    String   @default("Car") // Hatchback, Sedan, SUV, Van, Bike
+
+  // SQLite doesn't support scalar lists (String[]), so we use a comma-separated string or separate table.
+  // For simplicity in MVP/Dev, we'll store as a simple String (JSON stringified) for now, or just single image.
+  // Actually, let's create a separate Image model for better relations, which works on both.
+  images      Image[]  
+  location    String
+  features    String   // Stored as comma-separated string for SQLite compatibility
+
+  hostId      String
+  host        User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  bookings    Booking[]
+  reviews     Review[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  url       String
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  totalCost Float
+  status    String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
