@@ -10,8 +10,8 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 9.7 100% 43.7%;
-    /* Red #DF2400 */
+    --primary: 15.4 98.3% 45.1%;
+    /* Orange-Red #E43C02 */
     --primary-foreground: 355.7 100% 97.3%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 9.7 100% 43.7%;
+    --ring: 15.4 98.3% 45.1%;
     --radius: 0.5rem;
   }
 
@@ -34,8 +34,8 @@
     --card-foreground: 0 0% 95%;
     --popover: 0 0% 9%;
     --popover-foreground: 0 0% 95%;
-    --primary: 9.7 100% 43.7%;
-    /* Red #DF2400 for dark mode */
+    --primary: 15.4 98.3% 45.1%;
+    /* Orange-Red #E43C02 for dark mode */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -47,7 +47,7 @@
     --destructive-foreground: 0 85.7% 97.3%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 9.7 100% 43.7%;
+    --ring: 15.4 98.3% 45.1%;
   }
 }
 
