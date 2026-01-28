@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import ReviewModal from "@/components/reviews/review-modal"
+import PriceDisplay from "@/components/shared/price-display"
 
 export default async function TripsPage() {
     const session = await auth()
@@ -73,7 +74,7 @@ export default async function TripsPage() {
                                     </div>
 
                                     <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                                        <div className="text-sm font-medium text-gray-500">Total cost: <span className="text-black font-bold text-lg">${booking.totalCost}</span></div>
+                                        <div className="text-sm font-medium text-gray-500">Total cost: <span className="text-black font-bold text-lg"><PriceDisplay amount={booking.totalCost} /></span></div>
                                         <ReviewModal carId={booking.car.id} carMake={booking.car.make} carModel={booking.car.model} />
                                     </div>
                                 </div>

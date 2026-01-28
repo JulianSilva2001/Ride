@@ -7,6 +7,7 @@ import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 
 import { cn } from "@/lib/utils"
+import PriceDisplay from "@/components/shared/price-display"
 // We would usually use a proper Popover DatePicker here, but for speed/robustness in this environment
 // let's use standard native date inputs styled nicely, or a simple text input for today.
 // Actually, native date input is reliable.
@@ -63,7 +64,7 @@ export default function BookingWidget({ carId, pricePerDay }: BookingWidgetProps
             {total > 0 && (
                 <div className="flex justify-between items-center py-2 font-semibold">
                     <span>Total</span>
-                    <span>${total}</span>
+                    <span><PriceDisplay amount={total} /></span>
                 </div>
             )}
 

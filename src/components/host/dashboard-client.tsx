@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Plus, Car, Calendar, DollarSign, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import PriceDisplay from "@/components/shared/price-display"
 
 interface DashboardClientProps {
     user: any
@@ -65,7 +66,7 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">${totalEarnings.toLocaleString()}</div>
+                                    <div className="text-2xl font-bold"><PriceDisplay amount={totalEarnings} /></div>
                                     <p className="text-xs text-muted-foreground">+0% from last month</p>
                                 </CardContent>
                             </Card>
@@ -109,7 +110,7 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                                         <CardContent className="p-4 pt-0">
                                             <p className="text-gray-500 text-sm mb-4 line-clamp-2">{car.description}</p>
                                             <div className="flex justify-between items-center">
-                                                <span className="font-bold text-lg">${car.pricePerDay}<span className="text-sm font-normal text-gray-500">/day</span></span>
+                                                <span className="font-bold text-lg"><PriceDisplay amount={car.pricePerDay} /><span className="text-sm font-normal text-gray-500">/day</span></span>
                                                 <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
                                                     Active
                                                 </div>
@@ -142,7 +143,7 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="font-bold">${booking.totalCost}</p>
+                                                    <p className="font-bold"><PriceDisplay amount={booking.totalCost} /></p>
                                                     <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{booking.status}</span>
                                                 </div>
                                             </div>
@@ -161,7 +162,7 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                             </CardHeader>
                             <CardContent className="flex flex-col items-center justify-center py-10">
                                 <TrendingUp className="h-12 w-12 text-primary mb-4" />
-                                <h2 className="text-4xl font-bold mb-2">${totalEarnings.toLocaleString()}</h2>
+                                <h2 className="text-4xl font-bold mb-2"><PriceDisplay amount={totalEarnings} /></h2>
                                 <p className="text-gray-500">Total Lifetime Earnings</p>
                             </CardContent>
                         </Card>

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Car, Image as CarImage } from "@prisma/client"
 import Link from "next/link"
+import PriceDisplay from "@/components/shared/price-display"
 
 interface CarCardProps {
     car: Car & { images: CarImage[] }
@@ -27,7 +28,7 @@ export default function CarCard({ car }: CarCardProps) {
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                     <div className="flex justify-between items-end mt-2">
-                        <span className="font-bold text-lg">${car.pricePerDay}<span className="text-sm font-normal text-gray-500">/day</span></span>
+                        <span className="font-bold text-lg"><PriceDisplay amount={car.pricePerDay} /><span className="text-sm font-normal text-gray-500">/day</span></span>
                     </div>
                 </CardContent>
             </Card>

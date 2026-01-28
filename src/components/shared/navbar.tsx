@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 
 import { auth } from "@/auth"
 import UserMenu from "./user-menu"
+import CurrencySelector from "./currency-selector"
 
 export default async function Navbar() {
     const session = await auth()
@@ -19,6 +20,7 @@ export default async function Navbar() {
 
                 {/* User Menu */}
                 <div className="flex items-center gap-4">
+                    <CurrencySelector />
                     <Link href="/search">
                         <Button variant="ghost" className="hidden md:flex font-semibold">
                             Vehicles

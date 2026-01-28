@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
 import { User, Check, Star } from "lucide-react"
 import BookingWidget from "@/components/booking/booking-widget"
+import PriceDisplay from "@/components/shared/price-display"
 
 interface CarDetailPageProps {
     params: {
@@ -115,7 +116,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                     <div className="lg:col-span-1">
                         <div className="sticky top-24 border rounded-xl p-6 shadow-sm bg-white">
                             <div className="flex justify-between items-baseline mb-6">
-                                <span className="text-2xl font-bold">${car.pricePerDay}</span>
+                                <span className="text-2xl font-bold"><PriceDisplay amount={car.pricePerDay} /></span>
                                 <span className="text-gray-500">/ day</span>
                             </div>
 
