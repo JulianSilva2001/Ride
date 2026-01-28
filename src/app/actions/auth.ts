@@ -38,14 +38,20 @@ export async function register(formData: FormData) {
             // We can check existence here too just in case, but let's assume valid
             // Or better, let's strictly check by email before creating
 
-            const snapshot = await usersRef.where('email', '==', email).limit(1).get();
             if (!snapshot.empty) {
                 console.log("User already exists in Firestore");
             } else {
                 // Determine ID? We can let Firestore generate one, or use email hash, or just random
                 const newUserRef = usersRef.doc();
 
-                await newUserRef.set({
+                const phone = formData.get("phone") as string || ""
+                const nic = formData.get("nic") as string || ""
+                const bankName = formData.get("bankName") as string || ""
+                const branch = formData.get("branch") as string || ""
+                const accountName = formData.get("accountName") as string || ""
+                const accountNumber = formData.get("accountNumber") as string || ""
+
+                const userData: any = {
                     id: newUserRef.id, // Store ID in doc too for convenience
                     email,
                     name: email.split('@')[0],
@@ -53,7 +59,22 @@ export async function register(formData: FormData) {
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     image: null
-                });
+                }
+
+                if (role === "HOST") {
+                    userData.kyc = {
+                        phone,
+                        nic,
+                        bankName,
+                        branch,
+                        accountName,
+                        accountNumber,
+                        status: "PENDING",
+                        uploadedAt: new Date()
+                    }
+                }
+
+                await newUserRef.set(userData);
                 console.log("Created user in Firestore:", newUserRef.id);
             }
 
