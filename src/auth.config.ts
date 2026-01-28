@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth"
 
 export const authConfig = {
     pages: {
-        signIn: '/api/auth/signin',
+        signIn: '/login',
     },
     providers: [], // Providers added in auth.ts for Node.js environment
     callbacks: {

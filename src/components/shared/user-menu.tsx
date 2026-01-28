@@ -77,7 +77,7 @@ export default function UserMenu({ user }: UserMenuProps) {
                 ) : (
                     <>
                         <DropdownMenuItem className="font-semibold cursor-pointer" asChild>
-                            <Link href="/api/auth/signin">
+                            <Link href="/login">
                                 Log in
                             </Link>
                         </DropdownMenuItem>

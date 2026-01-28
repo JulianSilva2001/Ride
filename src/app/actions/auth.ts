@@ -70,3 +70,26 @@ export async function register(formData: FormData) {
         redirectTo: callbackUrl,
     })
 }
+
+export async function login(formData: FormData) {
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    const callbackUrl = formData.get("callbackUrl") as string || "/"
+
+    if (!email || !password) {
+        throw new Error("Missing credentials")
+    }
+
+    try {
+        await signIn("credentials", {
+            email,
+            password,
+            redirectTo: callbackUrl,
+        })
+    } catch (error) {
+        if ((error as Error).message.includes("CredentialsSignin")) {
+            throw new Error("Invalid credentials.")
+        }
+        throw error
+    }
+}
