@@ -1,77 +1,154 @@
-import { auth } from "@/auth"
-import { db } from "@/lib/db"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus } from "lucide-react"
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import Navbar from "@/components/shared/navbar"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import Navbar from "@/components/shared/navbar";
+import { CheckCircle2, DollarSign, Shield, Calendar } from "lucide-react";
 
-export default async function HostDashboard() {
-    const session = await auth()
-
-    if (!session?.user?.email) {
-        redirect('/api/auth/signin')
-    }
-
-    const user = await db.user.findUnique({
-        where: { email: session.user.email },
-        include: { cars: { include: { images: true } } }
-    })
-
-    const cars = user?.cars || []
-
+export default function HostLandingPage() {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-white">
             <Navbar />
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold">My Cars</h1>
-                    <Link href="/host/create">
-                        <Button className="gap-2">
-                            <Plus size={18} />
-                            List a new car
-                        </Button>
-                    </Link>
+            {/* Hero Section */}
+            <div className="relative isolate overflow-hidden bg-gray-900 py-24 sm:py-32">
+                <img
+                    src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2940&auto=format&fit=crop"
+                    alt="Luxury car background"
+                    className="absolute inset-0 -z-10 h-full w-full object-cover opacity-20"
+                />
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+                            Turn your car into earnings
+                        </h1>
+                        <p className="mt-6 text-lg leading-8 text-gray-300">
+                            Join thousands of hosts earning extra income by sharing their cars on the world's largest car sharing marketplace.
+                        </p>
+                        <div className="mt-10 flex items-center justify-center gap-x-6">
+                            <Link href="/host/dashboard">
+                                <Button size="lg" className="text-lg px-8 py-6">
+                                    Get Started
+                                </Button>
+                            </Link>
+                            <a href="#benefits" className="text-sm font-semibold leading-6 text-white">
+                                Learn more <span aria-hidden="true">→</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                {cars.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-lg border shadow-sm">
-                        <h3 className="text-xl font-semibold mb-2">You don't have any cars listed yet.</h3>
-                        <p className="text-gray-500 mb-6">Start earning by sharing your car with others.</p>
-                        <Link href="/host/create">
-                            <Button variant="outline">Create your first listing</Button>
-                        </Link>
+            {/* Benefits Section */}
+            <div id="benefits" className="py-24 sm:py-32 bg-gray-50">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="text-base font-semibold leading-7 text-primary">Why Host?</h2>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                            Earn money on your terms
+                        </p>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {cars.map((car) => (
-                            <Card key={car.id}>
-                                <div className="aspect-video bg-gray-200 relative overflow-hidden rounded-t-lg">
-                                    {car.images[0] ? (
-                                        <img src={car.images[0].url} alt={car.make} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
-                                    )}
+                    <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+                        <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+                            <div className="flex flex-col">
+                                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
+                                    <DollarSign className="h-5 w-5 flex-none text-primary" aria-hidden="true" />
+                                    Earn Extra Income
+                                </dt>
+                                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                                    <p className="flex-auto">
+                                        Offset the cost of car ownership. Our hosts earn an average of $700/month sharing their cars.
+                                    </p>
+                                </dd>
+                            </div>
+                            <div className="flex flex-col">
+                                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
+                                    <Shield className="h-5 w-5 flex-none text-primary" aria-hidden="true" />
+                                    You're Covered
+                                </dt>
+                                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                                    <p className="flex-auto">
+                                        Rest easy with our $1M liability insurance policy and physical damage protection for every trip.
+                                    </p>
+                                </dd>
+                            </div>
+                            <div className="flex flex-col">
+                                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
+                                    <Calendar className="h-5 w-5 flex-none text-primary" aria-hidden="true" />
+                                    Your Schedule
+                                </dt>
+                                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                                    <p className="flex-auto">
+                                        You're in control. Set your own availability, prices, and rules for your car.
+                                    </p>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            {/* How it works */}
+            <div className="py-24 sm:py-32">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl lg:text-center">
+                        <h2 className="text-base font-semibold leading-7 text-primary">Simple Process</h2>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                            How it works
+                        </p>
+                    </div>
+                    <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
+                        <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-x-8">
+                            <div className="relative pl-16">
+                                <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                                    <span className="font-bold text-primary">1</span>
                                 </div>
-                                <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-lg">{car.year} {car.make} {car.model}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-4 pt-0">
-                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{car.description}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-bold text-lg">${car.pricePerDay}<span className="text-sm font-normal text-gray-500">/day</span></span>
-                                        <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
-                                            Active
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                <h3 className="text-base font-semibold leading-7 text-gray-900">List your car</h3>
+                                <p className="mt-2 text-base leading-7 text-gray-600">
+                                    Create a free listing with photos and description. Set your daily price and availability.
+                                </p>
+                            </div>
+                            <div className="relative pl-16">
+                                <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                                    <span className="font-bold text-primary">2</span>
+                                </div>
+                                <h3 className="text-base font-semibold leading-7 text-gray-900">Welcome guests</h3>
+                                <p className="mt-2 text-base leading-7 text-gray-600">
+                                    When a guest books your car, you'll confirm the time and location for pickup.
+                                </p>
+                            </div>
+                            <div className="relative pl-16">
+                                <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                                    <span className="font-bold text-primary">3</span>
+                                </div>
+                                <h3 className="text-base font-semibold leading-7 text-gray-900">Sit back and earn</h3>
+                                <p className="mt-2 text-base leading-7 text-gray-600">
+                                    Get paid directly to your bank account within 3 days after each trip.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                )}
+                </div>
+            </div>
+
+            {/* CTA Section */}
+            <div className="bg-primary/5 py-16 sm:py-24">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                            Ready to start earning?
+                        </h2>
+                        <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">
+                            Join the host community today and turn your depreciating asset into an income engine.
+                        </p>
+                        <div className="mt-10 flex items-center justify-center gap-x-6">
+                            <Link href="/host/dashboard">
+                                <Button size="lg" className="text-lg px-8 py-6">
+                                    List Your Car
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    )
+    );
 }
