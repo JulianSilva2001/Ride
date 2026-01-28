@@ -19,9 +19,9 @@ export default async function Navbar() {
 
                 {/* User Menu */}
                 <div className="flex items-center gap-4">
-                    <Link href="/trips">
+                    <Link href="/search">
                         <Button variant="ghost" className="hidden md:flex font-semibold">
-                            Trips
+                            Vehicles
                         </Button>
                     </Link>
                     <Link href="/host">

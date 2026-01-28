@@ -1,4 +1,4 @@
-import { db } from "@/lib/db"
+
 import CarCard from "@/components/shared/car-card"
 import Navbar from "@/components/shared/navbar"
 import { redirect } from "next/navigation"
@@ -16,18 +16,35 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const location = searchParams.location || ""
 
-    // Basic filtering by location (case-insensitive simulation for SQLite/Postgres)
-    // Note: Prisma 'contains' is case-insensitive in Postgres but sensitive in SQLite usually.
-    // For MVP with SQLite, we might need to be careful, but let's try 'contains'.
-    const cars = await db.car.findMany({
-        where: {
-            location: {
-                contains: location,
-                // mode: 'insensitive' // Postgres only, fails on SQLite
-            }
-        },
-        include: { images: true }
+    // Import Firestore dynamically
+    const { adminDb } = await import("@/lib/firebase")
+
+    const carsRef = adminDb.collection('cars')
+    let carsSnapshot = await carsRef.get()
+
+    let cars = carsSnapshot.docs.map(doc => {
+        const data = doc.data()
+        // Ensure images array exists
+        const images = data.images || (data.imageUrl ? [{ url: data.imageUrl }] : [])
+
+        return {
+            id: doc.id,
+            ...data,
+            images,
+            // Normalize location for filtering
+            location: data.location || ""
+        }
     })
+
+    // Filter by location in memory (Firestore is limited for simple suffix/contains search without external index)
+    if (location) {
+        const lowerLocation = location.toLowerCase()
+        cars = cars.filter((car: any) =>
+            car.location.toLowerCase().includes(lowerLocation) ||
+            car.make.toLowerCase().includes(lowerLocation) ||
+            car.model.toLowerCase().includes(lowerLocation)
+        )
+    }
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -68,7 +85,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {cars.map(car => (
+                        {cars.map((car: any) => (
                             <CarCard key={car.id} car={car} />
                         ))}
                     </div>

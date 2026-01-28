@@ -1,8 +1,9 @@
 import NextAuth from "next-auth"
 import CredentialsKey from "next-auth/providers/credentials"
-import { db } from "@/lib/db"
+import { authConfig } from "./auth.config"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    ...authConfig,
     providers: [
         CredentialsKey({
             name: "Credentials",
@@ -17,31 +18,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 const email = credentials.email as string
 
-                let user = await db.user.findUnique({ where: { email } })
+                // Import Firestore dynamically
+                const { adminDb } = await import("@/lib/firebase")
 
-                if (!user) {
-                    user = await db.user.create({
-                        data: {
-                            email,
-                            name: "New User",
-                            role: "USER"
-                        }
-                    })
+                const usersRef = adminDb.collection('users');
+                const snapshot = await usersRef.where('email', '==', email).limit(1).get();
+
+                if (snapshot.empty) {
+                    return null
                 }
 
-                return user
+                const userDoc = snapshot.docs[0];
+                const userData = userDoc.data();
+
+                return {
+                    id: userDoc.id,
+                    email: userData.email,
+                    name: userData.name,
+                    role: userData.role,
+                    image: userData.image,
+                }
             },
         }),
     ],
-    callbacks: {
-        async session({ session, token }) {
-            if (token.sub && session.user) {
-                session.user.id = token.sub
-            }
-            return session
-        },
-        async jwt({ token }) {
-            return token
-        }
-    }
 })

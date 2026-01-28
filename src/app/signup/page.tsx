@@ -1,7 +1,8 @@
-import { signIn } from "@/auth"
+import { register } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import Link from "next/link"
 import Navbar from "@/components/shared/navbar"
 
@@ -20,17 +21,9 @@ export default function SignupPage({ searchParams }: { searchParams: { callbackU
                         </p>
                     </div>
 
-                    <form
-                        action={async (formData) => {
-                            "use server"
-                            await signIn("credentials", {
-                                email: formData.get("email"),
-                                password: formData.get("password"),
-                                redirectTo: searchParams.callbackUrl || "/",
-                            })
-                        }}
-                        className="mt-8 space-y-6"
-                    >
+                    <form action={register} className="mt-8 space-y-6">
+                        <input type="hidden" name="callbackUrl" value={searchParams.callbackUrl || "/"} />
+
                         <div className="space-y-4 rounded-md shadow-sm">
                             <div>
                                 <Label htmlFor="email-address" className="sr-only">
@@ -59,6 +52,20 @@ export default function SignupPage({ searchParams }: { searchParams: { callbackU
                                     placeholder="Password"
                                     className="relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                                 />
+                            </div>
+
+                            <div className="pt-2">
+                                <Label className="text-sm font-medium text-gray-700">I want to:</Label>
+                                <RadioGroup defaultValue="USER" name="role" className="mt-2 space-y-2">
+                                    <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <RadioGroupItem value="USER" id="r1" />
+                                        <Label htmlFor="r1" className="flex-1 cursor-pointer">Rent a car (Guest)</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2 border p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <RadioGroupItem value="HOST" id="r2" />
+                                        <Label htmlFor="r2" className="flex-1 cursor-pointer">List my car (Host)</Label>
+                                    </div>
+                                </RadioGroup>
                             </div>
                         </div>
 

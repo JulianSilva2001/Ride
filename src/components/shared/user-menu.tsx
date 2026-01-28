@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Menu, User, LogOut, Ticket, Heart } from "lucide-react"
+import { Menu, User, LogOut, Ticket, Heart, Car } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
@@ -42,18 +42,29 @@ export default function UserMenu({ user }: UserMenuProps) {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <Link href="/trips">
-                            <DropdownMenuItem className="cursor-pointer">
-                                <Ticket className="mr-2 h-4 w-4" />
-                                <span>Trips</span>
+                        {user.role === "HOST" ? (
+                            <DropdownMenuItem className="cursor-pointer" asChild>
+                                <Link href="/host/dashboard">
+                                    <Car className="mr-2 h-4 w-4" />
+                                    <span>Host Dashboard</span>
+                                </Link>
                             </DropdownMenuItem>
-                        </Link>
-                        <Link href="/wishlist">
-                            <DropdownMenuItem className="cursor-pointer">
-                                <Heart className="mr-2 h-4 w-4" />
-                                <span>Wishlist</span>
-                            </DropdownMenuItem>
-                        </Link>
+                        ) : (
+                            <>
+                                <DropdownMenuItem className="cursor-pointer" asChild>
+                                    <Link href="/trips">
+                                        <Ticket className="mr-2 h-4 w-4" />
+                                        <span>Trips</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer" asChild>
+                                    <Link href="/wishlist">
+                                        <Heart className="mr-2 h-4 w-4" />
+                                        <span>Wishlist</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            </>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-red-600 cursor-pointer focus:text-red-600"
@@ -65,28 +76,28 @@ export default function UserMenu({ user }: UserMenuProps) {
                     </>
                 ) : (
                     <>
-                        <Link href="/api/auth/signin">
-                            <DropdownMenuItem className="font-semibold cursor-pointer">
+                        <DropdownMenuItem className="font-semibold cursor-pointer" asChild>
+                            <Link href="/api/auth/signin">
                                 Log in
-                            </DropdownMenuItem>
-                        </Link>
-                        <Link href="/signup">
-                            <DropdownMenuItem className="cursor-pointer">
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" asChild>
+                            <Link href="/signup">
                                 Sign up
-                            </DropdownMenuItem>
-                        </Link>
+                            </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <Link href="/host">
-                            <DropdownMenuItem className="cursor-pointer">
+                        <DropdownMenuItem className="cursor-pointer" asChild>
+                            <Link href="/host">
                                 Host your car
-                            </DropdownMenuItem>
-                        </Link>
+                            </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="cursor-pointer">
                             Help center
                         </DropdownMenuItem>
                     </>
                 )}
             </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu >
     )
 }

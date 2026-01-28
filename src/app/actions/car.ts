@@ -1,6 +1,6 @@
 'use server'
 
-import { db } from "@/lib/db"
+
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -12,14 +12,15 @@ export async function createCar(formData: FormData) {
         throw new Error("You must be signed in to list a car")
     }
 
-    // Get user from DB to attach car
-    const user = await db.user.findUnique({
-        where: { email: session.user.email }
-    })
+    // Use Firestore
+    const { adminDb } = await import("@/lib/firebase");
+    const usersRef = adminDb.collection('users');
+    const userSnapshot = await usersRef.where('email', '==', session.user.email).limit(1).get();
 
-    if (!user) {
+    if (userSnapshot.empty) {
         throw new Error("User not found")
     }
+    const user = userSnapshot.docs[0];
 
     const make = formData.get("make") as string
     const model = formData.get("model") as string
@@ -28,42 +29,16 @@ export async function createCar(formData: FormData) {
     const description = formData.get("description") as string
     const location = formData.get("location") as string
     const features = formData.get("features") as string // Comma separated
-    const imageUrl = formData.get("imageUrl") as string
+    const imageUrl = formData.get("imageUrl") as string || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop"
 
     if (!make || !model || !year || !price || !location) {
         throw new Error("Missing required fields")
     }
 
-    // Create Car in DB
-    // Note: For SQLite, we store features as comma separated string for now if schema didn't support string[]
-    // But wait, schema defined features as String (comma separated)? No, I defined it as String in last schema update for SQLite.
-    // And Image was a separate model. Let's simplify and create the image relation.
-
-    const car = await db.car.create({
-        data: {
-            make,
-            model,
-            year,
-            pricePerDay: price,
-            description,
-            location,
-            features: features || "",
-            hostId: user.id,
-            images: {
-                create: {
-                    url: imageUrl || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop" // Default image if empty
-                }
-            }
-        },
-        include: {
-            images: true
-        }
-    })
-
-    // Sync to Firestore
     try {
-        const { adminDb } = await import("@/lib/firebase");
-        await adminDb.collection("cars").doc(car.id).set({
+        const carRef = adminDb.collection("cars").doc();
+        await carRef.set({
+            id: carRef.id,
             make,
             model,
             year,
@@ -72,14 +47,15 @@ export async function createCar(formData: FormData) {
             location,
             features: features || "",
             hostId: user.id,
-            imageUrl: car.images[0]?.url,
+            imageUrl: imageUrl,
+            images: [{ url: imageUrl }], // redundancy for UI compatibility if needed
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            id: car.id
+            updatedAt: new Date().toISOString()
         });
+        console.log("Created car in Firestore:", carRef.id);
     } catch (error) {
-        console.error("Error syncing to Firestore:", error);
-        // We continue even if Firestore sync fails, as Prisma is primary for now
+        console.error("Error creating car in Firestore:", error);
+        throw new Error("Failed to create listing")
     }
 
     revalidatePath('/host/dashboard') // Updated path
