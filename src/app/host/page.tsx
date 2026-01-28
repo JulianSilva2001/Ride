@@ -24,7 +24,7 @@ export default function HostLandingPage() {
                             Join thousands of hosts earning extra income by sharing their cars on the world's largest car sharing marketplace.
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <Link href="/host/dashboard">
+                            <Link href="/host/create">
                                 <Button size="lg" className="text-lg px-8 py-6">
                                     Get Started
                                 </Button>
@@ -140,7 +140,7 @@ export default function HostLandingPage() {
                             Join the host community today and turn your depreciating asset into an income engine.
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <Link href="/host/dashboard">
+                            <Link href="/host/create">
                                 <Button size="lg" className="text-lg px-8 py-6">
                                     List Your Car
                                 </Button>

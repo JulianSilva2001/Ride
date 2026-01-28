@@ -5,7 +5,15 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import Navbar from "@/components/shared/navbar"
 
-export default function CreateCarPage() {
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+
+export default async function CreateCarPage() {
+    const session = await auth()
+    if (!session?.user?.email) {
+        redirect('/signup?callbackUrl=/host/create')
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />

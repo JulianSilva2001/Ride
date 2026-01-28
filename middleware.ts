@@ -1,7 +1,17 @@
 import { auth } from "@/auth"
 
 export default auth((req) => {
-    if (!req.auth && req.nextUrl.pathname.startsWith("/host")) {
+    const isLoggedIn = !!req.auth
+    const isOnHostPage = req.nextUrl.pathname.startsWith("/host")
+    const isHostLandingPage = req.nextUrl.pathname === "/host"
+    const isHostCreatePage = req.nextUrl.pathname === "/host/create"
+
+    if (isOnHostPage && !isHostLandingPage && !isLoggedIn) {
+        if (isHostCreatePage) {
+            const newUrl = new URL("/signup", req.nextUrl.origin)
+            newUrl.searchParams.set("callbackUrl", req.nextUrl.pathname)
+            return Response.redirect(newUrl)
+        }
         const newUrl = new URL("/api/auth/signin", req.nextUrl.origin)
         return Response.redirect(newUrl)
     }
