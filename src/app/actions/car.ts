@@ -54,9 +54,34 @@ export async function createCar(formData: FormData) {
                     url: imageUrl || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop" // Default image if empty
                 }
             }
+        },
+        include: {
+            images: true
         }
     })
 
-    revalidatePath('/host')
-    redirect('/host')
+    // Sync to Firestore
+    try {
+        const { adminDb } = await import("@/lib/firebase");
+        await adminDb.collection("cars").doc(car.id).set({
+            make,
+            model,
+            year,
+            pricePerDay: price,
+            description,
+            location,
+            features: features || "",
+            hostId: user.id,
+            imageUrl: car.images[0]?.url,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            id: car.id
+        });
+    } catch (error) {
+        console.error("Error syncing to Firestore:", error);
+        // We continue even if Firestore sync fails, as Prisma is primary for now
+    }
+
+    revalidatePath('/host/dashboard') // Updated path
+    redirect('/host/dashboard') // Updated redirect path
 }

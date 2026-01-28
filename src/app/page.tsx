@@ -98,6 +98,21 @@ export default async function Home() {
           ))
         )}
       </div>
+
+      {/* Become a Host Section */}
+      <section className="bg-primary/5 py-24">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Do you have a car?</h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Earn extra income by sharing your car on Ride. It's free to list, and you're covered by our $1M liability insurance policy.
+          </p>
+          <Link href="/host">
+            <Button size="lg" className="text-lg px-8 py-6">
+              Become a Host
+            </Button>
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
