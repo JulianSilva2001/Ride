@@ -3,9 +3,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Car, Calendar, DollarSign, TrendingUp } from "lucide-react"
+import { Plus, Car, Calendar, DollarSign, TrendingUp, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import PriceDisplay from "@/components/shared/price-display"
+import { deleteListing } from "@/app/actions/listing"
 
 interface DashboardClientProps {
     user: any
@@ -109,11 +110,34 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                                         </CardHeader>
                                         <CardContent className="p-4 pt-0">
                                             <p className="text-gray-500 text-sm mb-4 line-clamp-2">{car.description}</p>
-                                            <div className="flex justify-between items-center">
+                                            <div className="flex justify-between items-center mb-4">
                                                 <span className="font-bold text-lg"><PriceDisplay amount={car.pricePerDay} /><span className="text-sm font-normal text-gray-500">/day</span></span>
-                                                <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
-                                                    Active
+                                                <div className={`px-2 py-1 text-xs font-bold rounded ${car.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    {car.status}
                                                 </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Link href={`/host/create?edit=${car.id}`} className="flex-1">
+                                                    <Button variant="outline" size="sm" className="w-full gap-2">
+                                                        <Edit size={14} /> Edit
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="flex-1 gap-2"
+                                                    onClick={async () => {
+                                                        if (confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+                                                            try {
+                                                                await deleteListing(car.id)
+                                                            } catch (error) {
+                                                                alert("Failed to delete listing")
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 size={14} /> Delete
+                                                </Button>
                                             </div>
                                         </CardContent>
                                     </Card>

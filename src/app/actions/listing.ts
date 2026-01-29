@@ -115,3 +115,31 @@ export async function publishListing(carId: string) {
 
     redirect("/host")
 }
+
+export async function deleteListing(carId: string) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        throw new Error("Unauthorized")
+    }
+
+    const { db } = await import("@/lib/db")
+
+    const car = await db.car.findUnique({
+        where: { id: carId }
+    })
+
+    if (!car) {
+        throw new Error("Not found")
+    }
+
+    if (car.hostId !== session.user.id) {
+        throw new Error("Unauthorized")
+    }
+
+    await db.car.delete({
+        where: { id: carId }
+    })
+
+    revalidatePath("/host")
+    return { success: true }
+}

@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button"
 import Navbar from "@/components/shared/navbar"
 import { redirect } from "next/navigation"
 
-export default function CreateListingStartPage() {
+export default function CreateListingStartPage({ searchParams }: { searchParams: { edit?: string } }) {
+    if (searchParams.edit) {
+        redirect(`/host/create/${searchParams.edit}`)
+    }
 
     async function startListing() {
         "use server"
