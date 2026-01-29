@@ -60,8 +60,8 @@ export async function register(formData: FormData) {
             const termsAccepted = formData.get("termsAccepted") === "true"
 
             // Host KYC Data
-            const phone = formData.get("phone") as string || null
             const nic = formData.get("nic") as string || null
+            // phone moved to User model, extracted from personal info
 
             // Driver Data
             const driverLicense = formData.get("driverLicense") as string || null
@@ -93,12 +93,13 @@ export async function register(formData: FormData) {
                     dob,
                     address,
                     city,
+                    phone: formData.get("phone") as string || null,
                     termsAccepted,
                     // Host Specific Relation
                     ...(role === "HOST" ? {
                         kyc: {
                             create: {
-                                phone,
+                                // phone removed from here
                                 nic,
                                 nicFront: nicFrontUrl,
                                 nicBack: nicBackUrl,

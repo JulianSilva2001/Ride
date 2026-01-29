@@ -83,16 +83,20 @@ export default function SignupWizard({ callbackUrl }: { callbackUrl?: string }) 
     const nextStep = (e: React.FormEvent) => {
         e.preventDefault()
 
+        // Step 1 Validation
+        if (step === 1) {
+            const phoneRegex = /^(\+94|0)?7[0-9]{8}$/
+            if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
+                alert("Invalid Phone format. Use +947XXXXXXXX or 07XXXXXXXX.")
+                return
+            }
+        }
+
         // Validation Logic
         if (step === 2 && role === "HOST") {
             const nicRegex = /^([0-9]{9}[x|X|v|V]|[0-9]{12})$/
             if (!nicRegex.test(formData.nic)) {
                 alert("Invalid NIC format. Use 9 digits + V/X or 12 digits.")
-                return
-            }
-            const phoneRegex = /^(\+94|0)?7[0-9]{8}$/
-            if (!phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
-                alert("Invalid Phone format. Use +947XXXXXXXX or 07XXXXXXXX.")
                 return
             }
         }
@@ -267,10 +271,18 @@ export default function SignupWizard({ callbackUrl }: { callbackUrl?: string }) 
                                 </div>
                             </div>
 
-                            <div>
-                                <Label htmlFor="email">Email address</Label>
-                                <Input id="email" name="email" type="email" required placeholder="Email address" value={formData.email} onChange={handleChange} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="phone">Mobile Number</Label>
+                                    <Input id="phone" name="phone" type="tel" required placeholder="+94 7X XXX XXXX" value={formData.phone} onChange={handleChange} />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email address</Label>
+                                    <Input id="email" name="email" type="email" required placeholder="Email address" value={formData.email} onChange={handleChange} />
+                                </div>
                             </div>
+
+
 
                             <div>
                                 <Label htmlFor="password">Password</Label>
@@ -323,11 +335,7 @@ export default function SignupWizard({ callbackUrl }: { callbackUrl?: string }) 
                                 We need to verify your identity before you can list cars.
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="phone">Mobile Number</Label>
-                                    <Input id="phone" name="phone" type="tel" required placeholder="+94 7X XXX XXXX" value={formData.phone} onChange={handleChange} />
-                                </div>
+                            <div className="grid grid-cols-1 gap-4">
                                 <div>
                                     <Label htmlFor="nic">NIC Number</Label>
                                     <Input id="nic" name="nic" required placeholder="199XXXXXXXXX or 9XXXXXXXXV" value={formData.nic} onChange={handleChange} />
