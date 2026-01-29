@@ -47,6 +47,37 @@ model Car {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Step 1: Basics
+  transmission String?  // Automatic, Manual
+  fuelType     String?  // Petrol, Diesel, Hybrid, Electric
+  engineSize   String?  // Optional
+  trim         String?  // Optional
+  
+  // Step 2: Location & Availability
+  availabilityType String? // Always, Custom
+  deliveryOption   Boolean @default(false)
+  deliveryFee      Float?
+
+  // Step 3: Pricing & Rules
+  securityDeposit Float?
+  includedKm      Int?    // per day
+  extraKmFee      Float?
+  fuelPolicy      String? // Full-to-full, etc.
+  
+  // Step 4: Details & Rules
+  rules           String? // Comma-separated or JSON
+  
+  // Step 6: Protection & GPS
+  protectionTier  String? // Basic, Secure, Pro
+  gpsInstalled    Boolean @default(false)
+
+  // Step 7: Legal
+  regNumber       String?
+  insuranceExpiry DateTime?
+  
+  // State
+  status          String   @default("DRAFT") // DRAFT, PUBLISHED
 }
 
 model Image {
