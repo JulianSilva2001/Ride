@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import DashboardClient from "@/components/host/dashboard-client"
 import { db } from "@/lib/db"
 
-export default async function HostDashboard() {
+export default async function HostDashboard({ searchParams }: { searchParams: { tab?: string } }) {
     const session = await auth()
 
     if (!session?.user?.email) {
@@ -60,12 +60,15 @@ export default async function HostDashboard() {
     // Calculate total earnings
     const totalEarnings = serializedBookings.reduce((sum: number, booking: any) => sum + (booking.totalCost || 0), 0)
 
+    const initialTab = searchParams.tab || "overview"
+
     return (
         <DashboardClient
             user={serializedUser}
             cars={serializedCars}
             bookings={serializedBookings}
             totalEarnings={totalEarnings}
+            initialTab={initialTab}
         />
     )
 }

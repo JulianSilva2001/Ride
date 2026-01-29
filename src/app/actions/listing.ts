@@ -67,9 +67,14 @@ export async function updateDraft(carId: string, data: any) {
     // Or we just ignore it for now to fix the crash, assuming images are handled separately or we add logic later.
     // Let's safe-guard the update first.
 
-    if (imageUrl && (!images || images.length === 0)) {
-        // Optional: Add logic to create an Image record if one doesn't exist?
-        // For MVP wizard, let's just ensure we don't crash.
+    if (imageUrl) {
+        // Create an Image record linked to the car
+        await db.image.create({
+            data: {
+                carId: carId,
+                url: imageUrl
+            }
+        })
     }
 
     await db.car.update({
@@ -113,7 +118,7 @@ export async function publishListing(carId: string) {
         }
     })
 
-    redirect("/host")
+    redirect("/host/dashboard?tab=listings")
 }
 
 export async function deleteListing(carId: string) {

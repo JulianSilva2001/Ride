@@ -4,6 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Car, Calendar, DollarSign, TrendingUp, Edit, Trash2 } from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Link from "next/link"
 import PriceDisplay from "@/components/shared/price-display"
 import { deleteListing } from "@/app/actions/listing"
@@ -13,9 +24,10 @@ interface DashboardClientProps {
     cars: any[]
     bookings: any[]
     totalEarnings: number
+    initialTab?: string
 }
 
-export default function DashboardClient({ user, cars, bookings, totalEarnings }: DashboardClientProps) {
+export default function DashboardClient({ user, cars, bookings, totalEarnings, initialTab = "overview" }: DashboardClientProps) {
     const activeListingsLink = "/host/create"
 
     return (
@@ -31,7 +43,7 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                     </Link>
                 </div>
 
-                <Tabs defaultValue="overview" className="w-full">
+                <Tabs defaultValue={initialTab} className="w-full">
                     <TabsList className="mb-8">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="listings">My Listings ({cars.length})</TabsTrigger>
@@ -122,22 +134,36 @@ export default function DashboardClient({ user, cars, bookings, totalEarnings }:
                                                         <Edit size={14} /> Edit
                                                     </Button>
                                                 </Link>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    className="flex-1 gap-2"
-                                                    onClick={async () => {
-                                                        if (confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
-                                                            try {
-                                                                await deleteListing(car.id)
-                                                            } catch (error) {
-                                                                alert("Failed to delete listing")
-                                                            }
-                                                        }
-                                                    }}
-                                                >
-                                                    <Trash2 size={14} /> Delete
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm" className="flex-1 gap-2">
+                                                            <Trash2 size={14} /> Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action cannot be undone. This will permanently delete your listing.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                className="bg-red-600 hover:bg-red-700"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await deleteListing(car.id)
+                                                                    } catch (error) {
+                                                                        alert("Failed to delete listing")
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </CardContent>
                                     </Card>
