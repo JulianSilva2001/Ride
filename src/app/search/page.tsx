@@ -1,7 +1,7 @@
-import { db } from "@/lib/db"
+
 import CarCard from "@/components/shared/car-card"
 import Navbar from "@/components/shared/navbar"
-import { redirect } from "next/navigation"
+import { db } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 
@@ -16,22 +16,34 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const location = searchParams.location || ""
 
-    // Basic filtering by location (case-insensitive simulation for SQLite/Postgres)
-    // Note: Prisma 'contains' is case-insensitive in Postgres but sensitive in SQLite usually.
-    // For MVP with SQLite, we might need to be careful, but let's try 'contains'.
+    // Prisma Filter
+    const where: any = {
+        status: "PUBLISHED" // Only show published cars
+    }
+
+    if (location) {
+        where.OR = [
+            { location: { contains: location, mode: 'insensitive' } },
+            { make: { contains: location, mode: 'insensitive' } },
+            { model: { contains: location, mode: 'insensitive' } }
+        ]
+    }
+
     const cars = await db.car.findMany({
-        where: {
-            location: {
-                contains: location,
-                // mode: 'insensitive' // Postgres only, fails on SQLite
-            }
-        },
+        where,
         include: { images: true }
     })
 
+    const serializedCars = cars.map(car => ({
+        ...car,
+        createdAt: car.createdAt.toISOString(),
+        updatedAt: car.updatedAt.toISOString(),
+        images: car.images
+    }))
+
     return (
         <div className="min-h-screen flex flex-col">
-            <Navbar />
+
 
             {/* Search Header */}
             <div className="bg-white border-b sticky top-16 z-40 shadow-sm">
@@ -57,7 +69,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {/* Results */}
             <div className="flex-1 container mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold mb-6">
-                    {location ? `Cars in "${location}"` : "All cars"}
+                    {location ? <span>Cars in &quot;{location}&quot;</span> : "All cars"}
                     <span className="text-gray-500 font-normal text-lg ml-2">({cars.length} results)</span>
                 </h1>
 
@@ -68,7 +80,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {cars.map(car => (
+                        {serializedCars.map((car: any) => (
                             <CarCard key={car.id} car={car} />
                         ))}
                     </div>
