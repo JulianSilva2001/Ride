@@ -6,7 +6,7 @@ import { CheckCircle2, DollarSign, Shield, Calendar } from "lucide-react";
 export default function HostLandingPage() {
     return (
         <div className="min-h-screen bg-white">
-            <Navbar />
+
 
             {/* Hero Section */}
             <div className="relative isolate overflow-hidden bg-gray-900 py-24 sm:py-32">

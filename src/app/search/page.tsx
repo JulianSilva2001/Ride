@@ -43,7 +43,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Navbar />
+
 
             {/* Search Header */}
             <div className="bg-white border-b sticky top-16 z-40 shadow-sm">

@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 import Footer from "@/components/shared/footer";
+import Navbar from "@/components/shared/navbar";
 
 export default function RootLayout({
   children,
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <div className="flex flex-col min-h-screen">
+            <Navbar />
             <div className="flex-grow">
               {children}
             </div>
