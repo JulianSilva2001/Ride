@@ -3,11 +3,38 @@
 import { signIn } from "@/auth"
 
 
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
+
+async function saveFile(file: File | null): Promise<string | null> {
+    if (!file || file.size === 0) return null
+
+    try {
+        const bytes = await file.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+
+        // Ensure upload directory exists
+        const uploadDir = join(process.cwd(), "public/uploads")
+        await mkdir(uploadDir, { recursive: true })
+
+        // Generate unique filename
+        const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`
+        const filepath = join(uploadDir, filename)
+
+        await writeFile(filepath, buffer)
+        return `/uploads/${filename}`
+    } catch (error) {
+        console.error("Error saving file:", error)
+        return null
+    }
+}
+
 export async function register(formData: FormData) {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
     const role = formData.get("role") as string || "USER"
     const callbackUrl = formData.get("callbackUrl") as string || "/"
+    const name = formData.get("name") as string || email.split('@')[0]
 
     console.log("Registering user:", email, role)
 
@@ -15,71 +42,87 @@ export async function register(formData: FormData) {
         throw new Error("Missing credentials")
     }
 
-    // Check if user already exists to avoid duplicate error or unintended role overwrite
-    // Check if user already exists in Firestore
-    const { adminDb } = await import("@/lib/firebase");
-    const snapshot = await adminDb.collection('users').where('email', '==', email).limit(1).get();
-    const existingUser = !snapshot.empty;
+    const { db } = await import("@/lib/db")
+
+    const existingUser = await db.user.findUnique({
+        where: { email }
+    })
 
     if (existingUser) {
-        // Decide logic: Fail if exists? Or just sign in?
-        // For 'Signup', typically we want to fail if taken, OR just log them in if password matches.
-        // Given current simple auth (no real password check), we'll just log them in.
-        // But if they wanted to be a HOST and are already a USER, we might want to update? 
-        // For now, let's keep it simple: Just proceed to signIn. 
-        // Real-world: return error "User already exists".
-        console.log("User exists, proceeding to sign in")
+        // Proceed to sign in if user exists
     } else {
         try {
-            const { adminDb } = await import("@/lib/firebase");
+            // Personal Info
+            const dobString = formData.get("dob") as string
+            const dob = dobString ? new Date(dobString) : null
+            const address = formData.get("address") as string
+            const city = formData.get("city") as string
+            const termsAccepted = formData.get("termsAccepted") === "true"
 
-            // Generate a new ID for the user
-            const usersRef = adminDb.collection('users');
-            // We can check existence here too just in case, but let's assume valid
-            // Or better, let's strictly check by email before creating
+            // Host KYC Data
+            const phone = formData.get("phone") as string || null
+            const nic = formData.get("nic") as string || null
 
-            if (!snapshot.empty) {
-                console.log("User already exists in Firestore");
-            } else {
-                // Determine ID? We can let Firestore generate one, or use email hash, or just random
-                const newUserRef = usersRef.doc();
+            // Driver Data
+            const driverLicense = formData.get("driverLicense") as string || null
+            const licenseExpiryString = formData.get("licenseExpiry") as string
+            const licenseExpiry = licenseExpiryString ? new Date(licenseExpiryString) : null
 
-                const phone = formData.get("phone") as string || ""
-                const nic = formData.get("nic") as string || ""
-                const bankName = formData.get("bankName") as string || ""
-                const branch = formData.get("branch") as string || ""
-                const accountName = formData.get("accountName") as string || ""
-                const accountNumber = formData.get("accountNumber") as string || ""
+            // Consents
+            const vehicleOwnershipConfirmed = formData.get("vehicleOwnershipConfirmed") === "true"
 
-                const userData: any = {
-                    id: newUserRef.id, // Store ID in doc too for convenience
+            // Financials
+            const bankName = formData.get("bankName") as string || null
+            const branch = formData.get("branch") as string || null
+            const accountName = formData.get("accountName") as string || null
+            const accountNumber = formData.get("accountNumber") as string || null
+            const accountType = formData.get("accountType") as string || "Savings"
+
+            // File Uploads
+            const nicFrontUrl = await saveFile(formData.get("nicFront") as File)
+            const nicBackUrl = await saveFile(formData.get("nicBack") as File)
+            const selfieUrl = await saveFile(formData.get("selfie") as File)
+            const licenseFrontUrl = await saveFile(formData.get("licenseFront") as File)
+
+            // Create User
+            const newUser = await db.user.create({
+                data: {
                     email,
-                    name: email.split('@')[0],
-                    role: role,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    image: null
+                    name,
+                    role,
+                    dob,
+                    address,
+                    city,
+                    termsAccepted,
+                    // Host Specific Relation
+                    ...(role === "HOST" ? {
+                        kyc: {
+                            create: {
+                                phone,
+                                nic,
+                                nicFront: nicFrontUrl,
+                                nicBack: nicBackUrl,
+                                selfie: selfieUrl,
+                                driverLicense,
+                                licenseExpiry,
+                                licenseFront: licenseFrontUrl,
+                                vehicleOwnershipConfirmed,
+                                bankName,
+                                branch,
+                                accountName,
+                                accountNumber,
+                                accountType,
+                                status: "PENDING"
+                            }
+                        }
+                    } : {})
                 }
+            })
 
-                if (role === "HOST") {
-                    userData.kyc = {
-                        phone,
-                        nic,
-                        bankName,
-                        branch,
-                        accountName,
-                        accountNumber,
-                        status: "PENDING",
-                        uploadedAt: new Date()
-                    }
-                }
-
-                await newUserRef.set(userData);
-                console.log("Created user in Firestore:", newUserRef.id);
-            }
+            console.log("Created user in Postgres:", newUser.id);
 
         } catch (error) {
-            console.error("Failed to create user in Firestore:", error);
+            console.error("Failed to create user in Postgres:", error);
             throw new Error("Registration failed");
         }
     }

@@ -1,34 +1,40 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { adminDb } from "@/lib/firebase"
+import { db } from "@/lib/db"
 import Navbar from "@/components/shared/navbar"
 import ListingWizard from "@/components/host/listing-wizard/listing-wizard"
 
 export default async function ListingDraftPage({ params }: { params: { id: string } }) {
     const session = await auth()
-    if (!session?.user) redirect("/api/auth/signin")
+    if (!session?.user?.id) redirect("/api/auth/signin")
 
-    const docRef = adminDb.collection("cars").doc(params.id)
-    const doc = await docRef.get()
+    const car = await db.car.findUnique({
+        where: { id: params.id },
+        include: { images: true }
+    })
 
-    if (!doc.exists) {
+    if (!car) {
         return <div>Listing not found</div>
     }
 
-    const data = doc.data()
-
-    if (data?.hostId !== session.user.id) {
+    if (car.hostId !== session.user.id) {
         return <div>Unauthorized</div>
     }
 
-    // Data handling: convert Firestore usage to plain JS objects for client components
+    // Serialize dates for client component
     const initialData = {
-        id: doc.id,
-        ...data,
-        imageUrl: data?.imageUrl || "",
-        createdAt: data?.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
-        updatedAt: data?.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : null,
-        insuranceExpiry: data?.insuranceExpiry?.toDate ? data.insuranceExpiry.toDate().toISOString() : data?.insuranceExpiry || null,
+        ...car,
+        createdAt: car.createdAt.toISOString(),
+        updatedAt: car.updatedAt.toISOString(),
+        insuranceExpiry: car.insuranceExpiry ? car.insuranceExpiry.toISOString() : null,
+        // The wizard might expect imageUrl as a string for MVP, or we adapt.
+        // In schema we added images Relation, but for wizard state we might used 'imageUrl' string in Step 5.
+        // Let's pass 'imageUrl' if present in images array or fallback.
+        // However, Prisma Car model doesn't have 'imageUrl' field anymore (Wait, checking schema)
+        // Schema has `images Image[]`.
+        // The wizard state expects `imageUrl`.
+        // I should map the first image url to `imageUrl` property for compatibility with the client state.
+        imageUrl: car.images?.[0]?.url || "",
     }
 
     return (

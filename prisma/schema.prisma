@@ -3,11 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Role enum is not supported in SQLite, using String with default
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -18,26 +17,66 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Personal Info (MVP)
+  dob           DateTime?
+  address       String?
+  city          String?
+  
+  // Agreements
+  termsAccepted Boolean   @default(false)
+
+  kyc           KYC?
+
   cars          Car[]
   bookings      Booking[]
   reviews       Review[]
 }
 
+model KYC {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Contact
+  phone         String?
+
+  // NIC Verification
+  nic           String?
+  nicFront      String?
+  nicBack       String?
+  selfie        String?
+
+  // Driver Verification
+  driverLicense String?
+  licenseFront  String?
+  licenseExpiry DateTime?
+
+  // Financials
+  bankName      String?
+  branch        String?
+  accountName   String?
+  accountNumber String?
+  accountType   String?  // Savings, Current
+  
+  // Consent
+  vehicleOwnershipConfirmed Boolean @default(false)
+
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  uploadedAt    DateTime @default(now())
+}
+
 model Car {
   id          String   @id @default(cuid())
-  make        String
-  model       String
-  year        Int
-  pricePerDay Float
-  description String
-  category    String   @default("Car") // Hatchback, Sedan, SUV, Van, Bike
+  make        String?
+  model       String?
+  year        Int?
+  pricePerDay Float?
+  description String?
+  category    String   @default("Car")
 
-  // SQLite doesn't support scalar lists (String[]), so we use a comma-separated string or separate table.
-  // For simplicity in MVP/Dev, we'll store as a simple String (JSON stringified) for now, or just single image.
-  // Actually, let's create a separate Image model for better relations, which works on both.
   images      Image[]  
-  location    String
-  features    String   // Stored as comma-separated string for SQLite compatibility
+  location    String?
+  features    String?   // Comma-separated string
 
   hostId      String
   host        User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
@@ -49,35 +88,36 @@ model Car {
   updatedAt   DateTime @updatedAt
 
   // Step 1: Basics
-  transmission String?  // Automatic, Manual
-  fuelType     String?  // Petrol, Diesel, Hybrid, Electric
-  engineSize   String?  // Optional
-  trim         String?  // Optional
+  transmission String?
+  fuelType     String?
+  engineSize   String?
+  trim         String?
   
   // Step 2: Location & Availability
-  availabilityType String? // Always, Custom
+  availabilityType String?
   deliveryOption   Boolean @default(false)
   deliveryFee      Float?
 
   // Step 3: Pricing & Rules
   securityDeposit Float?
-  includedKm      Int?    // per day
+  includedKm      Int?
   extraKmFee      Float?
-  fuelPolicy      String? // Full-to-full, etc.
+  fuelPolicy      String?
   
   // Step 4: Details & Rules
-  rules           String? // Comma-separated or JSON
+  rules           String?
   
   // Step 6: Protection & GPS
-  protectionTier  String? // Basic, Secure, Pro
+  protectionTier  String?
   gpsInstalled    Boolean @default(false)
 
   // Step 7: Legal
   regNumber       String?
   insuranceExpiry DateTime?
+  ownershipConfirmed Boolean @default(false)
   
   // State
-  status          String   @default("DRAFT") // DRAFT, PUBLISHED
+  status          String   @default("DRAFT")
 }
 
 model Image {
@@ -92,7 +132,7 @@ model Booking {
   startDate DateTime
   endDate   DateTime
   totalCost Float
-  status    String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  status    String   @default("PENDING")
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

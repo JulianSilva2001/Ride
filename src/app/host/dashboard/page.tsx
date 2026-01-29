@@ -1,9 +1,7 @@
 import { auth } from "@/auth"
-
 import { redirect } from "next/navigation"
 import DashboardClient from "@/components/host/dashboard-client"
-import Navbar from "@/components/shared/navbar"
-
+import { db } from "@/lib/db"
 
 export default async function HostDashboard() {
     const session = await auth()
@@ -12,69 +10,61 @@ export default async function HostDashboard() {
         redirect('/api/auth/signin')
     }
 
-    // Import Firestore dynamically
-    const { adminDb } = await import("@/lib/firebase")
+    const user = await db.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+            cars: {
+                include: { images: true }
+            },
+            bookings: {
+                include: { car: true, user: true }
+            }
+        }
+    })
 
-    if (!session?.user?.email) {
-        redirect('/api/auth/signin')
-    }
-
-    // Fetch user from Firestore
-    const usersRef = adminDb.collection('users');
-    const userSnapshot = await usersRef.where('email', '==', session.user.email).limit(1).get();
-
-    if (userSnapshot.empty) {
+    if (!user) {
         return <div className="p-20 text-center">User not found in database. Email: {session.user.email}</div>
     }
 
-    const userDoc = userSnapshot.docs[0];
-    const userData = userDoc.data();
-    const user = {
-        id: userDoc.id,
-        ...userData,
-        createdAt: userData.createdAt?.toDate?.()?.toISOString() || userData.createdAt,
-        updatedAt: userData.updatedAt?.toDate?.()?.toISOString() || userData.updatedAt
-    };
+    // Transform for client component if needed
+    // Prisma returns Date objects, client components might expect strings if they are not using superjson/similar.
+    // DashboardClient usually expects Serializable props.
 
-    // Fetch cars from Firestore where hostId == user.id
-    const carsSnapshot = await adminDb.collection('cars').where('hostId', '==', user.id).get();
-    const cars = carsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            // Map simple imageUrl to expected images array structure for dashboard
-            images: data.imageUrl ? [{ url: data.imageUrl }] : [],
-            createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
-            updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
-        };
-    });
+    const serializedUser = {
+        ...user,
+        role: user.role || "USER",
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+        cars: undefined, // remove relations from user object if we pass them separately
+        bookings: undefined
+    }
 
-    // Fetch bookings from Firestore
-    const bookingsSnapshot = await adminDb.collection('bookings').where('hostId', '==', user.id).get();
-    const bookings = bookingsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            startDate: data.startDate?.toDate?.()?.toISOString() || data.startDate,
-            endDate: data.endDate?.toDate?.()?.toISOString() || data.endDate,
-            createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
-            updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
-            // Mock car/user objects if needed by UI
-            car: data.car || { make: "Unknown", model: "Car" },
-            user: data.user || { name: "Guest" }
-        }
-    });
+    const serializedCars = user.cars.map(car => ({
+        ...car,
+        createdAt: car.createdAt.toISOString(),
+        updatedAt: car.updatedAt.toISOString(),
+        images: car.images // Keep as is
+    }))
+
+    const serializedBookings = user.bookings.map(booking => ({
+        ...booking,
+        startDate: booking.startDate.toISOString(),
+        endDate: booking.endDate.toISOString(),
+        createdAt: booking.createdAt.toISOString(),
+        updatedAt: booking.updatedAt.toISOString(),
+        // mock nested objects to match expected interface if they are missing
+        car: booking.car || { make: "Unknown", model: "Car" },
+        user: booking.user || { name: "Guest" }
+    }))
 
     // Calculate total earnings
-    const totalEarnings = bookings.reduce((sum: number, booking: any) => sum + (booking.totalCost || 0), 0)
+    const totalEarnings = serializedBookings.reduce((sum: number, booking: any) => sum + (booking.totalCost || 0), 0)
 
     return (
         <DashboardClient
-            user={user}
-            cars={cars}
-            bookings={bookings}
+            user={serializedUser}
+            cars={serializedCars}
+            bookings={serializedBookings}
             totalEarnings={totalEarnings}
         />
     )

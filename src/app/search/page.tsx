@@ -1,7 +1,7 @@
 
 import CarCard from "@/components/shared/car-card"
 import Navbar from "@/components/shared/navbar"
-import { redirect } from "next/navigation"
+import { db } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 
@@ -16,35 +16,30 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const location = searchParams.location || ""
 
-    // Import Firestore dynamically
-    const { adminDb } = await import("@/lib/firebase")
+    // Prisma Filter
+    const where: any = {
+        status: "PUBLISHED" // Only show published cars
+    }
 
-    const carsRef = adminDb.collection('cars')
-    let carsSnapshot = await carsRef.get()
+    if (location) {
+        where.OR = [
+            { location: { contains: location, mode: 'insensitive' } },
+            { make: { contains: location, mode: 'insensitive' } },
+            { model: { contains: location, mode: 'insensitive' } }
+        ]
+    }
 
-    let cars = carsSnapshot.docs.map(doc => {
-        const data = doc.data()
-        // Ensure images array exists
-        const images = data.images || (data.imageUrl ? [{ url: data.imageUrl }] : [])
-
-        return {
-            id: doc.id,
-            ...data,
-            images,
-            // Normalize location for filtering
-            location: data.location || ""
-        }
+    const cars = await db.car.findMany({
+        where,
+        include: { images: true }
     })
 
-    // Filter by location in memory (Firestore is limited for simple suffix/contains search without external index)
-    if (location) {
-        const lowerLocation = location.toLowerCase()
-        cars = cars.filter((car: any) =>
-            car.location.toLowerCase().includes(lowerLocation) ||
-            car.make.toLowerCase().includes(lowerLocation) ||
-            car.model.toLowerCase().includes(lowerLocation)
-        )
-    }
+    const serializedCars = cars.map(car => ({
+        ...car,
+        createdAt: car.createdAt.toISOString(),
+        updatedAt: car.updatedAt.toISOString(),
+        images: car.images
+    }))
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -74,7 +69,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {/* Results */}
             <div className="flex-1 container mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold mb-6">
-                    {location ? `Cars in "${location}"` : "All cars"}
+                    {location ? <span>Cars in &quot;{location}&quot;</span> : "All cars"}
                     <span className="text-gray-500 font-normal text-lg ml-2">({cars.length} results)</span>
                 </h1>
 
@@ -85,7 +80,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {cars.map((car: any) => (
+                        {serializedCars.map((car: any) => (
                             <CarCard key={car.id} car={car} />
                         ))}
                     </div>
