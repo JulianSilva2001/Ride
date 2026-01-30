@@ -11,12 +11,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const [featuredCars, sedans, suvs, vans, bikes, hatchbacks] = await Promise.all([
-    db.car.findMany({ take: 8, orderBy: { createdAt: 'desc' }, include: { images: true } }),
-    db.car.findMany({ where: { category: 'Sedan' }, take: 4, include: { images: true } }),
-    db.car.findMany({ where: { category: 'SUV' }, take: 4, include: { images: true } }),
-    db.car.findMany({ where: { category: 'Van' }, take: 4, include: { images: true } }),
-    db.car.findMany({ where: { category: 'Bike' }, take: 4, include: { images: true } }),
-    db.car.findMany({ where: { category: 'Hatchback' }, take: 4, include: { images: true } }),
+    db.car.findMany({ where: { status: 'PUBLISHED' }, take: 8, orderBy: { createdAt: 'desc' }, include: { images: true } }),
+    db.car.findMany({ where: { category: 'Sedan', status: 'PUBLISHED' }, take: 4, include: { images: true } }),
+    db.car.findMany({ where: { category: 'SUV', status: 'PUBLISHED' }, take: 4, include: { images: true } }),
+    db.car.findMany({ where: { category: 'Van', status: 'PUBLISHED' }, take: 4, include: { images: true } }),
+    db.car.findMany({ where: { category: 'Bike', status: 'PUBLISHED' }, take: 4, include: { images: true } }),
+    db.car.findMany({ where: { category: 'Hatchback', status: 'PUBLISHED' }, take: 4, include: { images: true } }),
   ])
 
   return (
