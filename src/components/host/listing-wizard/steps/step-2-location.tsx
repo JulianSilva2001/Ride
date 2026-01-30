@@ -51,7 +51,7 @@ export default function LocationStep({ data, updateData, errors }: { data: any, 
 
             {data.deliveryOption && (
                 <div className="space-y-2 pl-6 border-l-2">
-                    <Label htmlFor="deliveryFee">Delivery Fee ($)</Label>
+                    <Label htmlFor="deliveryFee">Delivery Fee ({data.currency === 'USD' ? '$' : 'Rs'})</Label>
                     <Input
                         id="deliveryFee"
                         type="number"

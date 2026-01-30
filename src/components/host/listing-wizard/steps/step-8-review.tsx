@@ -3,12 +3,15 @@
 import { Check, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// Helper to format currency
-const currency = (val: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0)
-}
-
 export default function ReviewStep({ data, updateData }: { data: any, updateData: (d: any) => void }) {
+    // Helper to format currency
+    const currency = (val: number) => {
+        const code = data.currency || 'LKR'
+        if (code === 'LKR') {
+            return 'Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0)
+        }
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(val || 0)
+    }
     return (
         <div className="space-y-8">
             <div className="text-center mb-8">
@@ -21,8 +24,8 @@ export default function ReviewStep({ data, updateData }: { data: any, updateData
                     {/* Preview Card */}
                     <div className="border rounded-xl overflow-hidden shadow-sm">
                         <div className="aspect-video bg-gray-200 relative">
-                            {data.imageUrl ? (
-                                <img src={data.imageUrl} className="w-full h-full object-cover" />
+                            {((data.images || []).find((img: any) => img.label === 'COVER')?.url || (data.images || [])[0]?.url) ? (
+                                <img src={(data.images || []).find((img: any) => img.label === 'COVER')?.url || (data.images || [])[0]?.url} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                             )}
@@ -44,9 +47,13 @@ export default function ReviewStep({ data, updateData }: { data: any, updateData
                             <Check className="h-4 w-4 text-green-600" />
                         </h5>
                         <ul className="space-y-1 text-gray-600">
+                            <li>Transmission: <span className="font-medium text-black">{data.transmission}</span></li>
+                            <li>Fuel Type: <span className="font-medium text-black">{data.fuelType}</span></li>
                             <li>Availability: <span className="font-medium text-black">{data.availabilityType}</span></li>
                             <li>Fuel Policy: <span className="font-medium text-black">{data.fuelPolicy}</span></li>
-                            <li>Included KM: <span className="font-medium text-black">{data.includedKm} km/day</span></li>
+                            <li>Included KM: <span className="font-medium text-black">{data.includedKm} km/day</span> (Extra: {currency(data.extraKmFee)}/km)</li>
+                            <li>Security Deposit: <span className="font-medium text-black">{currency(data.securityDeposit)}</span></li>
+                            <li>Delivery: <span className="font-medium text-black">{data.deliveryOption ? `Yes (${currency(data.deliveryFee)})` : "No"}</span></li>
                             <li>Protection: <span className="font-medium text-black">{data.protectionTier}</span></li>
                         </ul>
                     </div>

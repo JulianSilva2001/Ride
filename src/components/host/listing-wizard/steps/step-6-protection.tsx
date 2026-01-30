@@ -2,15 +2,27 @@
 
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import FileUpload from "@/components/shared/file-upload"
 
 export default function ProtectionStep({ data, updateData, errors }: { data: any, updateData: (d: any) => void, errors: any }) {
+
+    const currencyCode = data.currency || "LKR"
+
+    const formatCurrency = (val: number) => {
+        if (currencyCode === 'LKR') {
+            return 'Rs. ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0)
+        }
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(val || 0)
+    }
+
+    const price = data.pricePerDay || 0
 
     const tiers = [
         {
             id: 'Basic',
             name: 'Basic',
             fee: '12%',
-            earnings: '$44.00',
+            earnings: formatCurrency(price * 0.88),
             features: [
                 'Standard Support',
                 'Min. Insurance',
@@ -22,7 +34,7 @@ export default function ProtectionStep({ data, updateData, errors }: { data: any
             id: 'Secure',
             name: 'Secure',
             fee: '15%',
-            earnings: '$42.50',
+            earnings: formatCurrency(price * 0.85),
             features: [
                 'Priority Support',
                 'Medium Insurance',
@@ -34,7 +46,7 @@ export default function ProtectionStep({ data, updateData, errors }: { data: any
             id: 'Pro',
             name: 'Pro',
             fee: '20%',
-            earnings: '$40.00',
+            earnings: formatCurrency(price * 0.80),
             features: [
                 '24/7 Support',
                 'Max Insurance',
@@ -100,6 +112,27 @@ export default function ProtectionStep({ data, updateData, errors }: { data: any
                         {errors.gpsInstalled && <p className="text-xs text-red-500 mt-1">{errors.gpsInstalled}</p>}
                     </div>
                 </div>
+
+                {data.gpsInstalled && (
+                    <div className="pl-4 border-l-2 border-gray-100 ml-4">
+                        <div className="bg-yellow-50 p-4 rounded-lg mb-4">
+                            <p className="text-sm text-yellow-800">
+                                Please upload a photo of the installed GPS device or the app dashboard showing the vehicle's location.
+                            </p>
+                        </div>
+                        <FileUpload
+                            label="GPS Device / App Screenshot *"
+                            value={(data.images || []).find((img: any) => img.label === "GPS")?.url || ""}
+                            onChange={(url: string) => {
+                                const newImages = [...(data.images || [])].filter((img: any) => img.label !== "GPS")
+                                if (url) newImages.push({ label: "GPS", url })
+                                updateData({ images: newImages })
+                            }}
+                            maxSizeMB={5}
+                        />
+                        {errors.gpsImage && <p className="text-xs text-red-500 mt-1">{errors.gpsImage}</p>}
+                    </div>
+                )}
             </div>
         </div>
     )

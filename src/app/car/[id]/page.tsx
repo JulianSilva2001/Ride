@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { User, Check, Star } from "lucide-react"
 import BookingWidget from "@/components/booking/booking-widget"
 import PriceDisplay from "@/components/shared/price-display"
+import ImageGallery from "@/components/car/image-gallery"
 
 interface CarDetailPageProps {
     params: {
@@ -37,18 +38,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Images and Details */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Main Image */}
-                        <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden relative">
-                            {car.images[0] ? (
-                                <img
-                                    src={car.images[0].url}
-                                    alt={car.model}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
-                            )}
-                        </div>
+                        {/* Image Gallery */}
+                        <ImageGallery images={car.images} />
 
                         {/* Title and Specs */}
                         <div>
