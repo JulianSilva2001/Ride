@@ -44,7 +44,16 @@ export const validateStep4 = (data: any) => {
 export const validateStep5 = (data: any) => {
     const errors: Record<string, string> = {}
 
-    if (!data.imageUrl || !data.imageUrl.startsWith("https://")) errors.imageUrl = "Provide a valid HTTPS image URL."
+    const images = data.images || []
+    const requiredLabels = ['COVER', 'FRONT', 'REAR', 'INTERIOR_FRONT', 'INTERIOR_REAR', 'SIDE', 'WHEELS', 'BOOT']
+    const uploadedLabels = images.map((img: any) => img.label)
+
+    // Check if all required labels are present
+    const missing = requiredLabels.filter(label => !uploadedLabels.includes(label))
+
+    if (missing.length > 0) {
+        errors.images = `Missing required photos: ${missing.map(l => l.replace('_', ' ')).join(', ')}`
+    }
 
     return errors
 }
@@ -57,6 +66,11 @@ export const validateStep6 = (data: any) => {
         errors.gpsInstalled = "GPS is required for Secure and Pro tiers."
     }
 
+    if (data.gpsInstalled) {
+        const hasGpsPhoto = (data.images || []).some((img: any) => img.label === "GPS")
+        if (!hasGpsPhoto) errors.gpsImage = "GPS Device/App photo is required."
+    }
+
     return errors
 }
 
@@ -64,6 +78,7 @@ export const validateStep7 = (data: any) => {
     const errors: Record<string, string> = {}
 
     if (!data.regNumber || data.regNumber.length < 4 || data.regNumber.length > 20) errors.regNumber = "Enter a valid registration number (4-20 chars)."
+    if (!data.registrationBookUrl) errors.registrationBookUrl = "Registration Book (CR) is required."
     if (!data.ownershipConfirmed) errors.ownershipConfirmed = "You must confirm authorization."
 
     return errors

@@ -72,6 +72,7 @@ model Car {
   model       String?
   year        Int?
   pricePerDay Float?
+  currency    String   @default("LKR")
   description String?
   category    String   @default("Car")
 
@@ -117,6 +118,12 @@ model Car {
   insuranceExpiry DateTime?
   ownershipConfirmed Boolean @default(false)
   
+  // Documents
+  registrationBookUrl String?
+  insuranceCertUrl    String?
+  emissionCertUrl     String?
+  emissionExpiry      DateTime?
+
   // State
   status          String   @default("DRAFT")
 }
@@ -124,6 +131,7 @@ model Car {
 model Image {
   id        String   @id @default(cuid())
   url       String
+  label     String?
   carId     String
   car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
 }

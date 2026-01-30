@@ -67,13 +67,27 @@ export async function updateDraft(carId: string, data: any) {
     // Or we just ignore it for now to fix the crash, assuming images are handled separately or we add logic later.
     // Let's safe-guard the update first.
 
-    if (imageUrl) {
-        // Create an Image record linked to the car
+    if (images && Array.isArray(images)) {
+        // Sync images: Delete existing and recreate (Simple Strategy)
+        // Note: For production, we might want diffing to preserve IDs/order, but for MVP this ensures consistency.
+
+        await db.image.deleteMany({
+            where: { carId: carId }
+        })
+
+        if (images.length > 0) {
+            await db.image.createMany({
+                data: images.map((img: any) => ({
+                    carId: carId,
+                    url: img.url,
+                    label: img.label
+                }))
+            })
+        }
+    } else if (imageUrl) {
+        // Fallback for legacy calls if any
         await db.image.create({
-            data: {
-                carId: carId,
-                url: imageUrl
-            }
+            data: { carId, url: imageUrl }
         })
     }
 

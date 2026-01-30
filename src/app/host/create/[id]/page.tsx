@@ -27,14 +27,7 @@ export default async function ListingDraftPage({ params }: { params: { id: strin
         createdAt: car.createdAt.toISOString(),
         updatedAt: car.updatedAt.toISOString(),
         insuranceExpiry: car.insuranceExpiry ? car.insuranceExpiry.toISOString() : null,
-        // The wizard might expect imageUrl as a string for MVP, or we adapt.
-        // In schema we added images Relation, but for wizard state we might used 'imageUrl' string in Step 5.
-        // Let's pass 'imageUrl' if present in images array or fallback.
-        // However, Prisma Car model doesn't have 'imageUrl' field anymore (Wait, checking schema)
-        // Schema has `images Image[]`.
-        // The wizard state expects `imageUrl`.
-        // I should map the first image url to `imageUrl` property for compatibility with the client state.
-        imageUrl: car.images?.[0]?.url || "",
+        images: car.images || [],
     }
 
     return (

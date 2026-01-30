@@ -12,9 +12,9 @@ export default function CarCard({ car }: CarCardProps) {
         <Link href={`/car/${car.id}`} className="block">
             <Card className="overflow-hidden hover:shadow-lg transition cursor-pointer group h-full">
                 <div className="aspect-video bg-gray-200 relative overflow-hidden">
-                    {car.images[0] ? (
+                    {(car.images.find(img => img.label === 'COVER')?.url || car.images[0]?.url) ? (
                         <img
-                            src={car.images[0].url}
+                            src={car.images.find(img => img.label === 'COVER')?.url || car.images[0]?.url}
                             alt={car.make}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
