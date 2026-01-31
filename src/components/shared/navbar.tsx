@@ -23,7 +23,7 @@ export default async function Navbar() {
                     <CurrencySelector />
                     <Link href="/search">
                         <Button variant="ghost" className="hidden md:flex font-semibold">
-                            Vehicles
+                            Rent a Car
                         </Button>
                     </Link>
                     <Link href="/host">

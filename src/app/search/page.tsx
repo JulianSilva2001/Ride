@@ -4,17 +4,26 @@ import Navbar from "@/components/shared/navbar"
 import { db } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
+import SearchBar from "@/components/search/search-bar"
+
+
+import CategoryFilter from "@/components/search/category-filter"
 
 interface SearchPageProps {
     searchParams: {
         location?: string
         from?: string
         until?: string
+        category?: string
     }
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const location = searchParams.location || ""
+    const category = searchParams.category || ""
+
+    const from = searchParams.from ? new Date(searchParams.from) : null
+    const until = searchParams.until ? new Date(searchParams.until) : null
 
     // Prisma Filter
     const where: any = {
@@ -27,6 +36,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             { make: { contains: location, mode: 'insensitive' } },
             { model: { contains: location, mode: 'insensitive' } }
         ]
+    }
+
+    if (category && category !== "All") {
+        where.category = { equals: category, mode: 'insensitive' }
+    }
+
+    // Availability Filter
+    if (from && until) {
+        where.NOT = {
+            bookings: {
+                some: {
+                    status: "CONFIRMED",
+                    AND: [
+                        { startDate: { lte: until } },
+                        { endDate: { gte: from } }
+                    ]
+                }
+            }
+        }
     }
 
     const cars = await db.car.findMany({
@@ -44,32 +72,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     return (
         <div className="min-h-screen flex flex-col">
 
-
             {/* Search Header */}
             <div className="bg-white border-b sticky top-16 z-40 shadow-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <form className="flex gap-2 max-w-4xl">
-                        <div className="flex-1 relative">
-                            <label className="absolute -top-1.5 left-3 bg-white px-1 text-xs font-semibold text-gray-500">Location</label>
-                            <input
-                                name="location"
-                                defaultValue={location}
-                                placeholder="Where are you going?"
-                                className="w-full h-12 border rounded-md px-3 pt-2 outline-none focus:border-black transition"
-                            />
-                        </div>
-                        {/* Date inputs can be added here later */}
-                        <Button type="submit" size="lg" className="h-12 px-8">
-                            Search
-                        </Button>
-                    </form>
+                <div className="container mx-auto px-4 py-4 space-y-4">
+                    <div className="max-w-4xl">
+                        <SearchBar />
+                    </div>
+                    {/* Category Filter */}
+                    <div className="max-w-5xl">
+                        <CategoryFilter />
+                    </div>
                 </div>
             </div>
 
             {/* Results */}
             <div className="flex-1 container mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold mb-6">
-                    {location ? <span>Cars in &quot;{location}&quot;</span> : "All cars"}
+                    {category && category !== "All" ? `${category}s` : "All cars"}
+                    {location && <span> in &quot;{location}&quot;</span>}
                     <span className="text-gray-500 font-normal text-lg ml-2">({cars.length} results)</span>
                 </h1>
 
